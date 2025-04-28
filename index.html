@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookstore</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-buttons-container left">
+        <button id="show-register-modal">Register</button>
+        <button id="show-login-modal">Login</button>
+        <button id="logout-button" style="display: none;">Logout</button>
+    </div>
+    <div class="container">
+        <h1>Online Bookstore</h1>
+
+    <!-- Register Modal -->
+    <div id="register-modal" class="modal">
+        <div class="modal-content card">
+            <span class="close-button" id="close-register-modal">&times;</span>
+            <h3>Register</h3>
+            <input type="text" id="register-username" placeholder="Username" required>
+            <input type="password" id="register-password" placeholder="Password" required>
+            <button id="register-button">Register</button>
+            <p id="register-message"></p>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content card">
+            <span class="close-button" id="close-login-modal">&times;</span>
+            <h3>Login</h3>
+            <input type="text" id="login-username" placeholder="Username" required>
+            <input type="password" id="login-password" placeholder="Password" required>
+            <button id="login-button">Login</button>
+            <p id="login-message"></p>
+        </div>
+    </div>
+
+    <hr>
+
+    <div id="search-section" class="card center-search">
+        <h2 class="visually-hidden">Search Books</h2>
+        <div class="search-bar-wrapper">
+            <input type="text" id="search-input" placeholder="Enter ISBN, Author, or Title">
+            <select id="search-type">
+                <option value="isbn">ISBN</option>
+                <option value="author">Author</option>
+                <option value="title">Title</option>
+            </select>
+            <button id="search-button">Search</button>
+            <button id="show-all-button">Show All Books</button>
+        </div>
+    </div>
+
+    <hr>
+
+    <div id="books-section" class="card">
+        <h2 class="visually-hidden">Available Books</h2>
+        <div id="book-grid" class="book-grid"></div>
+    </div>
+
+    <hr>
+
+    <div id="review-section" class="card" style="display: none;">
+        <h2 class="visually-hidden">Book Reviews</h2>
+        <h3 id="review-book-title"></h3>
+        <div id="reviews-display"></div>
+        <div id="add-review-form" style="display: none;">
+            <h3>Add/Update Your Review</h3>
+            <textarea id="review-text" rows="4" cols="50" placeholder="Write your review here..."></textarea>
+            <button id="submit-review-button">Submit Review</button>
+            <button id="delete-review-button" style="display: none;">Delete My Review</button>
+            <p id="review-message"></p>
+        </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    </div>
+</body>
+</html>

@@ -1,0 +1,372 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --background-color: #f4f7f6;
+    --text-color: #333;
+    --card-bg: #ffffff;
+    --border-color: #dee2e6;
+    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    --border-radius: 8px;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.container {
+    max-width: 960px;
+    margin: 20px auto;
+    padding: 20px;
+}
+
+h1, h2, h3 {
+    color: var(--dark-color);
+    margin-bottom: 1rem;
+}
+
+h1 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+}
+
+.card {
+    background: var(--card-bg);
+    padding: 25px;
+    margin-bottom: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--border-color);
+}
+
+#auth-section .forms-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+#register-form,
+#login-form {
+    flex: 1; /* Each form takes equal space */
+    min-width: 250px; /* Minimum width before wrapping */
+}
+
+input[type="text"],
+input[type="password"],
+select,
+textarea {
+    width: 100%; /* Use 100% width */
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box; /* Include padding and border in element's total width and height */
+    font-size: 1rem;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 8px;
+    font-size: 1rem;
+    transition: background-color 0.2s ease-in-out;
+    font-weight: 400;
+}
+
+button:hover {
+    background-color: #0056b3; /* Darker shade of primary */
+}
+
+#search-button, #show-all-button {
+    background-color: var(--secondary-color);
+}
+#search-button:hover, #show-all-button:hover {
+    background-color: #5a6268;
+}
+
+#register-button, #login-button, #submit-review-button {
+    background-color: var(--success-color);
+}
+#register-button:hover, #login-button:hover, #submit-review-button:hover {
+    background-color: #218838;
+}
+
+#logout-button {
+    background-color: var(--danger-color);
+}
+
+#logout-button:hover {
+    background-color: #c82333;
+}
+
+#delete-review-button {
+    background-color: var(--warning-color);
+    color: var(--dark-color);
+}
+
+#delete-review-button:hover {
+    background-color: #e0a800;
+}
+
+#book-list {
+    list-style: none;
+    padding: 0;
+}
+
+#book-list li {
+    background: var(--light-color);
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#book-list li:hover {
+    background: #e9ecef;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+}
+
+#reviews-display .review {
+    border-bottom: 1px dashed var(--border-color);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+#reviews-display .review:last-child {
+    border-bottom: none;
+}
+
+#reviews-display .review strong {
+    color: var(--primary-color);
+}
+
+p#register-message,
+p#login-message,
+p#review-message {
+    margin-top: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+p#register-message.success, p#login-message.success, p#review-message.success {
+    color: var(--success-color);
+}
+p#register-message.error, p#login-message.error, p#review-message.error {
+    color: var(--danger-color);
+}
+
+/* Styles for Auth Buttons Container */
+.auth-buttons-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 100; /* Ensure buttons are above other content */
+}
+
+.auth-buttons-container.left {
+    left: 20px;
+    right: auto;
+}
+
+.auth-buttons-container button {
+    margin-left: 10px; /* Space between buttons */
+}
+
+/* Centered Search Bar Styles */
+.center-search {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 30px auto;
+    max-width: 700px;
+    background: var(--card-bg);
+    box-shadow: var(--box-shadow);
+    border-radius: var(--border-radius);
+    padding: 20px 30px;
+}
+.search-bar-wrapper {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+.search-bar-wrapper input,
+.search-bar-wrapper select {
+    flex: 1 1 0;
+    min-width: 120px;
+}
+.search-bar-wrapper button {
+    flex: 0 0 auto;
+}
+
+/* Book Grid Styles */
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+    margin-top: 10px;
+}
+.book-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--border-color);
+    padding: 18px 16px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    transition: box-shadow 0.2s;
+    position: relative;
+}
+.book-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+}
+.book-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--primary-color);
+}
+.book-card-author {
+    font-size: 0.98rem;
+    color: var(--secondary-color);
+    margin-bottom: 8px;
+}
+.book-card-isbn {
+    font-size: 0.92rem;
+    color: var(--dark-color);
+    margin-bottom: 12px;
+}
+.book-card-reviews {
+    margin-top: 10px;
+    width: 100%;
+}
+.book-card .review {
+    border-bottom: 1px dashed var(--border-color);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+}
+.book-card .review:last-child {
+    border-bottom: none;
+}
+.book-card .review strong {
+    color: var(--primary-color);
+}
+
+/* Visually Hidden for Accessibility */
+.visually-hidden {
+    position: absolute !important;
+    height: 1px; width: 1px;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+    white-space: nowrap;
+}
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 30px;
+    border: 1px solid var(--border-color);
+    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 500px; /* Maximum width */
+    border-radius: var(--border-radius);
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* The Close Button */
+.close-button {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+/* Hide elements initially - Keep these */
+#review-section,
+#add-review-form,
+#delete-review-button,
+#logout-button {
+    display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    .container {
+        padding: 15px;
+    }
+    #auth-section .forms-container {
+        flex-direction: column;
+    }
+    button {
+        width: 100%;
+        margin-bottom: 10px;
+        margin-right: 0;
+    }
+    input[type="text"],
+    input[type="password"],
+    select,
+    textarea {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.8rem;
+    }
+    h2 {
+        font-size: 1.4rem;
+    }
+    .card {
+        padding: 15px;
+    }
+}

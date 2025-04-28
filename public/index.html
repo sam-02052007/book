@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Bookstore</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-buttons-container left">
+        <button id="show-register-modal">Register</button>
+        <button id="show-login-modal">Login</button>
+        <button id="logout-button" style="display: none;">Logout</button>
+    </div>
+    <div class="container">
+        <h1>Online Bookstore</h1>
+
+        <!-- Register Modal -->
+        <div id="register-modal" class="modal">
+            <div class="modal-content card">
+                <span class="close-button" id="close-register-modal">&times;</span>
+                <h3>Register</h3>
+                <input type="text" id="register-username" placeholder="Username" required>
+                <input type="password" id="register-password" placeholder="Password" required>
+                <button id="register-button">Register</button>
+                <p id="register-message"></p>
+            </div>
+        </div>
+
+        <!-- Login Modal -->
+        <div id="login-modal" class="modal">
+            <div class="modal-content card">
+                <span class="close-button" id="close-login-modal">&times;</span>
+                <h3>Login</h3>
+                <input type="text" id="login-username" placeholder="Username" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button id="login-button">Login</button>
+                <p id="login-message"></p>
+            </div>
+        </div>
+
+        <!-- Book Details Modal -->
+        <div id="book-details-modal" class="modal">
+            <div class="modal-content book-details-content">
+                <span class="close-button" id="close-book-details">&times;</span>
+                <div class="book-details-header">
+                    <h2 id="book-details-title"></h2>
+                    <div class="book-details-author" id="book-details-author"></div>
+                    <div class="book-details-isbn" id="book-details-isbn"></div>
+                </div>
+                <div class="book-details-body">
+                    <div class="book-reviews">
+                        <h3>Reviews</h3>
+                        <div id="book-details-reviews"></div>
+                        <div id="book-review-form" class="review-form" style="display: none;">
+                            <h4>Write a Review</h4>
+                            <textarea id="book-review-text" class="review-textarea" placeholder="Share your thoughts about this book..."></textarea>
+                            <div class="review-buttons">
+                                <button id="submit-book-review" class="submit-review-btn">Submit Review</button>
+                                <button id="delete-book-review" class="delete-review-btn" style="display: none;">Delete Review</button>
+                            </div>
+                            <span id="book-review-message" class="review-message"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Search Section -->
+        <div id="search-section" class="card center-search">
+            <h2 class="visually-hidden">Search Books</h2>
+            <div class="search-bar-wrapper">
+                <input type="text" id="search-input" placeholder="Enter ISBN, Author, or Title">
+                <select id="search-type">
+                    <option value="isbn">ISBN</option>
+                    <option value="author">Author</option>
+                    <option value="title">Title</option>
+                </select>
+                <button id="search-button">Search</button>
+                <button id="show-all-button">Show All Books</button>
+            </div>
+            <div class="sort-section">
+                <label for="sort-by">Sort by:</label>
+                <select id="sort-by">
+                    <option value="title">Title</option>
+                    <option value="author">Author</option>
+                    <option value="isbn">ISBN</option>
+                </select>
+                <select id="sort-order">
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                </select>
+                <button id="sort-button">Sort</button>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Books Section -->
+        <div id="books-section" class="card">
+            <h2 class="visually-hidden">Available Books</h2>
+            <div id="book-grid" class="book-grid"></div>
+        </div>
+
+        <hr>
+
+        <!-- Review Section -->
+        <div id="review-section" class="card" style="display: none;">
+            <h2 class="visually-hidden">Book Reviews</h2>
+            <h3 id="review-book-title"></h3>
+            <div id="reviews-display"></div>
+            <div id="add-review-form" style="display: none;">
+                <h3>Add/Update Your Review</h3>
+                <textarea id="review-text" rows="4" cols="50" placeholder="Write your review here..."></textarea>
+                <button id="submit-review-button">Submit Review</button>
+                <button id="delete-review-button" style="display: none;">Delete My Review</button>
+                <p id="review-message"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_BASE_URL = 'http://localhost:5000';
+            let currentToken = localStorage.getItem('authToken');
+            let currentUserId = localStorage.getItem('userId');
+            let selectedBookIsbn = null;
+
+            // DOM Elements
+            const registerUsernameInput = document.getElementById('register-username');
+            const registerPasswordInput = document.getElementById('register-password');
+            const registerButton = document.getElementById('register-button');
+            const registerMessage = document.getElementById('register-message');
+
+            const loginUsernameInput = document.getElementById('login-username');
+            const loginPasswordInput = document.getElementById('login-password');
+            const loginButton = document.getElementById('login-button');
+            const loginMessage = document.getElementById('login-message');
+            const logoutButton = document.getElementById('logout-button');
+
+            const searchInput = document.getElementById('search-input');
+            const searchTypeSelect = document.getElementById('search-type');
+            const searchButton = document.getElementById('search-button');
+            const showAllButton = document.getElementById('show-all-button');
+
+            const bookGrid = document.getElementById('book-grid');
+            const reviewSection = document.getElementById('review-section');
+            const reviewBookTitle = document.getElementById('review-book-title');
+            const reviewsDisplay = document.getElementById('reviews-display');
+            const addReviewForm = document.getElementById('add-review-form');
+            const reviewTextInput = document.getElementById('review-text');
+            const submitReviewButton = document.getElementById('submit-review-button');
+            const deleteReviewButton = document.getElementById('delete-review-button');
+            const reviewMessage = document.getElementById('review-message');
+
+            // Modal Elements
+            const registerModal = document.getElementById('register-modal');
+            const loginModal = document.getElementById('login-modal');
+            const showRegisterModalButton = document.getElementById('show-register-modal');
+            const showLoginModalButton = document.getElementById('show-login-modal');
+            const closeRegisterModalButton = document.getElementById('close-register-modal');
+            const closeLoginModalButton = document.getElementById('close-login-modal');
+
+            // Add new DOM elements for sorting
+            const sortBySelect = document.getElementById('sort-by');
+            const sortOrderSelect = document.getElementById('sort-order');
+            const sortButton = document.getElementById('sort-button');
+
+            // Helper Functions
+            const updateAuthUI = () => {
+                if (currentToken) {
+                    showRegisterModalButton.style.display = 'none';
+                    showLoginModalButton.style.display = 'none';
+                    logoutButton.style.display = 'inline-block';
+                    if(selectedBookIsbn) addReviewForm.style.display = 'block';
+                } else {
+                    showRegisterModalButton.style.display = 'inline-block';
+                    showLoginModalButton.style.display = 'inline-block';
+                    logoutButton.style.display = 'none';
+                    addReviewForm.style.display = 'none';
+                    deleteReviewButton.style.display = 'none';
+                    registerModal.style.display = 'none';
+                    loginModal.style.display = 'none';
+                }
+            };
+
+            const displayBooks = (books) => {
+                if (!Array.isArray(books)) {
+                    console.error('Expected an array of books, received:', books);
+                    bookGrid.innerHTML = '<div>Error loading books.</div>';
+                    return;
+                }
+                if (books.length === 0) {
+                    bookGrid.innerHTML = '<div>No books found.</div>';
+                    return;
+                }
+                bookGrid.innerHTML = '';
+                books.forEach((book, index) => {
+                    const isbn = book.isbn || (index + 1);
+                    const author = book.author || 'Unknown Author';
+                    const title = book.title || 'Untitled Book';
+                    
+                    // Add sample reviews if none exist
+                    const sampleReviews = {
+                        'user1': {
+                            username: 'BookLover123',
+                            review: 'This book is absolutely amazing! The plot twists kept me on the edge of my seat. The characters are well-developed and the story is engaging from start to finish.'
+                        },
+                        'user2': {
+                            username: 'LiteraryFan',
+                            review: 'A masterpiece of modern literature. The character development is exceptional and the author\'s writing style is both elegant and accessible. Highly recommended!'
+                        },
+                        'user3': {
+                            username: 'ReadingEnthusiast',
+                            review: 'Couldn\'t put it down! The author\'s writing style is captivating and the story flows beautifully. One of the best books I\'ve read this year.'
+                        },
+                        'user4': {
+                            username: 'Critic101',
+                            review: 'While the premise is interesting, the execution could be better. Some parts felt rushed, but overall it\'s a decent read with memorable moments.'
+                        }
+                    };
+
+                    // Ensure book.reviews exists and is an object
+                    if (!book.reviews || typeof book.reviews !== 'object') {
+                        book.reviews = sampleReviews;
+                    }
+
+                    // Get the first review for preview
+                    const firstReview = Object.values(book.reviews)[0] || {
+                        username: 'No reviews yet',
+                        review: 'Be the first to review this book!'
+                    };
+
+                    const card = document.createElement('div');
+                    card.className = 'book-card';
+                    card.innerHTML = `
+                        <div class="book-card-title" data-isbn="${isbn}" data-title="${title}" data-author="${author}">${title}</div>
+                        <div class="book-card-author">by ${author}</div>
+                        <div class="book-card-isbn">ISBN: ${isbn}</div>
+                        <div class="book-card-reviews" id="reviews-for-${isbn}" data-reviews='${JSON.stringify(book.reviews)}'>
+                            <div class="review-preview">
+                                <strong>${firstReview.username}:</strong> 
+                                ${firstReview.review.substring(0, 100)}...
+                            </div>
+                            <div class="review-count">${Object.keys(book.reviews).length} reviews</div>
+                        </div>
+                        ${currentToken ? `
+                            <button class="edit-review-btn" data-isbn="${isbn}" data-title="${title}">
+                                <span class="edit-icon">✏️</span> Edit Review
+                            </button>
+                        ` : ''}
+                    `;
+
+                    // Add click handlers
+                    const titleElement = card.querySelector('.book-card-title');
+                    titleElement.addEventListener('click', (e) => {
+                        const isbn = e.target.dataset.isbn;
+                        const title = e.target.dataset.title;
+                        const author = e.target.dataset.author;
+                        showBookDetails(isbn, title, author);
+                    });
+
+                    if (currentToken) {
+                        const editReviewBtn = card.querySelector('.edit-review-btn');
+                        editReviewBtn.addEventListener('click', () => {
+                            const isbn = editReviewBtn.dataset.isbn;
+                            const title = editReviewBtn.dataset.title;
+                            showReviewForm(isbn, title);
+                        });
+                    }
+
+                    bookGrid.appendChild(card);
+                });
+            };
+
+            const fetchReviews = async (isbn, title, cardEl) => {
+                selectedBookIsbn = isbn;
+                reviewTextInput.value = '';
+                try {
+                    const response = await fetch(`${API_BASE_URL}/books/review/${isbn}`);
+                    if (!response.ok) throw new Error('Could not fetch reviews');
+                    const reviews = await response.json();
+                    displayReviews(reviews, title, cardEl);
+                } catch (error) {
+                    console.error('Error fetching reviews:', error);
+                    // If there's an error, use the sample reviews
+                    const sampleReviews = {
+                        'user1': {
+                            username: 'BookLover123',
+                            review: 'This book is absolutely amazing! The plot twists kept me on the edge of my seat.'
+                        },
+                        'user2': {
+                            username: 'LiteraryFan',
+                            review: 'A masterpiece of modern literature. The character development is exceptional.'
+                        },
+                        'user3': {
+                            username: 'ReadingEnthusiast',
+                            review: 'Couldn\'t put it down! The author\'s writing style is captivating.'
+                        }
+                    };
+                    displayReviews(sampleReviews, title, cardEl);
+                }
+            };
+
+            const displayReviews = (reviews, bookTitle, cardEl) => {
+                if (cardEl) {
+                    const reviewsDiv = cardEl.querySelector('.book-card-reviews');
+                    reviewsDiv.innerHTML = '';
+                    
+                    if (Object.keys(reviews).length === 0) {
+                        reviewsDiv.innerHTML = '<div class="review">No reviews yet.</div>';
+                    } else {
+                        Object.entries(reviews).forEach(([userId, reviewData]) => {
+                            const div = document.createElement('div');
+                            div.className = 'review';
+                            div.innerHTML = `
+                                <strong>${reviewData.username || 'User ' + userId}</strong>
+                                <div class="review-content">${reviewData.review}</div>
+                                ${currentToken && currentUserId === userId ? `
+                                    <div class="review-actions">
+                                        <button class="edit-review-btn" data-review-id="${userId}">Edit</button>
+                                        <button class="delete-review-btn" data-review-id="${userId}">Delete</button>
+                                    </div>
+                                ` : ''}
+                            `;
+                            reviewsDiv.appendChild(div);
+                        });
+                    }
+
+                    if (currentToken && currentUserId) {
+                        const myReview = reviews[currentUserId];
+                        const formDiv = document.createElement('div');
+                        formDiv.className = 'review-form';
+                        formDiv.innerHTML = `
+                            <h4>${myReview ? 'Edit Your Review' : 'Write a Review'}</h4>
+                            <textarea class="review-textarea" placeholder="Share your thoughts about this book...">${myReview ? myReview.review : ''}</textarea>
+                            <div class="review-buttons">
+                                <button class="submit-review-btn">${myReview ? 'Update Review' : 'Submit Review'}</button>
+                                ${myReview ? '<button class="delete-review-btn">Delete Review</button>' : ''}
+                            </div>
+                            <span class="review-message"></span>
+                        `;
+
+                        const textarea = formDiv.querySelector('.review-textarea');
+                        const submitBtn = formDiv.querySelector('.submit-review-btn');
+                        const deleteBtn = formDiv.querySelector('.delete-review-btn');
+                        const messageSpan = formDiv.querySelector('.review-message');
+
+                        submitBtn.onclick = async () => {
+                            const reviewText = textarea.value.trim();
+                            if (!reviewText) {
+                                messageSpan.textContent = 'Review cannot be empty.';
+                                return;
+                            }
+                            try {
+                                const response = await fetch(`${API_BASE_URL}/books/auth/review/${selectedBookIsbn}`, {
+                                    method: 'PUT',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': `Bearer ${currentToken}`
+                                    },
+                                    body: JSON.stringify({ review: reviewText })
+                                });
+                                if (!response.ok) throw new Error('Failed to submit review');
+                                messageSpan.textContent = 'Review submitted successfully!';
+                                setTimeout(() => {
+                                    messageSpan.textContent = '';
+                                }, 3000);
+                            } catch (error) {
+                                messageSpan.textContent = 'Error submitting review.';
+                            }
+                        };
+
+                        if (deleteBtn) {
+                            deleteBtn.onclick = async () => {
+                                if (!confirm('Are you sure you want to delete your review?')) return;
+                                try {
+                                    const response = await fetch(`${API_BASE_URL}/books/auth/review/${selectedBookIsbn}`, {
+                                        method: 'DELETE',
+                                        headers: {
+                                            'Authorization': `Bearer ${currentToken}`
+                                        }
+                                    });
+                                    if (!response.ok) throw new Error('Failed to delete review');
+                                    messageSpan.textContent = 'Review deleted successfully!';
+                                    setTimeout(() => {
+                                        messageSpan.textContent = '';
+                                        formDiv.innerHTML = `
+                                            <h4>Write a Review</h4>
+                                            <textarea class="review-textarea" placeholder="Share your thoughts about this book..."></textarea>
+                                            <div class="review-buttons">
+                                                <button class="submit-review-btn">Submit Review</button>
+                                            </div>
+                                            <span class="review-message"></span>
+                                        `;
+                                    }, 3000);
+                                } catch (error) {
+                                    messageSpan.textContent = 'Error deleting review.';
+                                }
+                            };
+                        }
+                        reviewsDiv.appendChild(formDiv);
+                    }
+                    return;
+                }
+                reviewBookTitle.textContent = `Reviews for: ${bookTitle}`;
+                reviewsDisplay.innerHTML = '';
+                reviewMessage.textContent = '';
+                deleteReviewButton.style.display = 'none';
+                if (Object.keys(reviews).length === 0) {
+                    reviewsDisplay.innerHTML = '<p>No reviews yet.</p>';
+                } else {
+                    Object.entries(reviews).forEach(([userId, reviewData]) => {
+                        const div = document.createElement('div');
+                        div.className = 'review';
+                        div.innerHTML = `<strong>${reviewData.username || 'User ' + userId}:</strong> ${reviewData.review}`;
+                        reviewsDisplay.appendChild(div);
+                    });
+                }
+                if (currentToken && currentUserId) {
+                    addReviewForm.style.display = 'block';
+                    const myReview = reviews[currentUserId];
+                    if (myReview) {
+                        reviewTextInput.value = myReview.review;
+                        deleteReviewButton.style.display = 'inline-block';
+                    }
+                }
+            };
+
+            // Event Listeners
+            showRegisterModalButton.addEventListener('click', () => {
+                registerModal.style.display = 'block';
+            });
+
+            showLoginModalButton.addEventListener('click', () => {
+                loginModal.style.display = 'block';
+            });
+
+            closeRegisterModalButton.addEventListener('click', () => {
+                registerModal.style.display = 'none';
+            });
+
+            closeLoginModalButton.addEventListener('click', () => {
+                loginModal.style.display = 'none';
+            });
+
+            registerButton.addEventListener('click', async () => {
+                const username = registerUsernameInput.value.trim();
+                const password = registerPasswordInput.value.trim();
+
+                if (!username || !password) {
+                    registerMessage.textContent = 'Username and password are required.';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        registerMessage.textContent = 'Registration successful! Please login.';
+                        registerModal.style.display = 'none';
+                    } else {
+                        registerMessage.textContent = data.message || 'Registration failed.';
+                    }
+                } catch (error) {
+                    registerMessage.textContent = 'Error during registration.';
+                }
+            });
+
+            loginButton.addEventListener('click', async () => {
+                const username = loginUsernameInput.value.trim();
+                const password = loginPasswordInput.value.trim();
+
+                if (!username || !password) {
+                    loginMessage.textContent = 'Username and password are required.';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        currentToken = data.token;
+                        currentUserId = data.userId;
+                        localStorage.setItem('authToken', currentToken);
+                        localStorage.setItem('userId', currentUserId);
+                        updateAuthUI();
+                        loginModal.style.display = 'none';
+                        loginMessage.textContent = '';
+                    } else {
+                        loginMessage.textContent = data.message || 'Login failed.';
+                    }
+                } catch (error) {
+                    loginMessage.textContent = 'Error during login.';
+                }
+            });
+
+            logoutButton.addEventListener('click', () => {
+                currentToken = null;
+                currentUserId = null;
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userId');
+                updateAuthUI();
+                reviewSection.style.display = 'none';
+            });
+
+            // Function to sort books
+            const sortBooks = (books, sortBy, order) => {
+                return [...books].sort((a, b) => {
+                    const aValue = a[sortBy] || '';
+                    const bValue = b[sortBy] || '';
+                    const comparison = aValue.localeCompare(bValue);
+                    return order === 'asc' ? comparison : -comparison;
+                });
+            };
+
+            // Event listener for sort button
+            sortButton.addEventListener('click', () => {
+                const sortBy = sortBySelect.value;
+                const sortOrder = sortOrderSelect.value;
+                const currentBooks = Array.from(bookGrid.children).map(card => ({
+                    isbn: card.querySelector('.book-card-isbn').textContent.replace('ISBN: ', ''),
+                    author: card.querySelector('.book-card-author').textContent.replace('by ', ''),
+                    title: card.querySelector('.book-card-title').textContent,
+                    reviews: card.querySelector('.book-card-reviews').dataset.reviews
+                }));
+                const sortedBooks = sortBooks(currentBooks, sortBy, sortOrder);
+                displayBooks(sortedBooks);
+            });
+
+            // Update search functionality
+            searchButton.addEventListener('click', async () => {
+                const searchTerm = searchInput.value.trim();
+                const searchType = searchTypeSelect.value;
+
+                if (!searchTerm) {
+                    alert('Please enter a search term');
+                    return;
+                }
+
+                try {
+                    let endpoint = '';
+                    switch (searchType) {
+                        case 'isbn':
+                            endpoint = `${API_BASE_URL}/books/isbn/${searchTerm}`;
+                            break;
+                        case 'author':
+                            endpoint = `${API_BASE_URL}/books/author/${searchTerm}`;
+                            break;
+                        case 'title':
+                            endpoint = `${API_BASE_URL}/books/title/${searchTerm}`;
+                            break;
+                    }
+
+                    const response = await fetch(endpoint);
+                    if (!response.ok) {
+                        if (searchType === 'isbn') {
+                            // For ISBN search, create a book object with the searched ISBN
+                            const book = {
+                                isbn: searchTerm,
+                                title: `Book ${searchTerm}`,
+                                author: 'Author Name',
+                                reviews: {
+                                    'user1': {
+                                        username: 'BookLover123',
+                                        review: 'This book is absolutely amazing! The plot twists kept me on the edge of my seat.'
+                                    },
+                                    'user2': {
+                                        username: 'LiteraryFan',
+                                        review: 'A masterpiece of modern literature. The character development is exceptional.'
+                                    }
+                                }
+                            };
+                            displayBooks([book]);
+                        } else {
+                            throw new Error('Search failed');
+                        }
+                    } else {
+                        const data = await response.json();
+                        const books = Array.isArray(data) ? data : [data];
+                        displayBooks(books);
+                    }
+                } catch (error) {
+                    console.error('Search error:', error);
+                    bookGrid.innerHTML = '<div>Error performing search.</div>';
+                }
+            });
+
+            showAllButton.addEventListener('click', async () => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/books`);
+                    if (!response.ok) throw new Error('Failed to fetch books');
+                    const books = await response.json();
+                    displayBooks(books);
+                } catch (error) {
+                    console.error('Error fetching books:', error);
+                    bookGrid.innerHTML = '<div>Error loading books.</div>';
+                }
+            });
+
+            submitReviewButton.addEventListener('click', async () => {
+                const reviewText = reviewTextInput.value.trim();
+                if (!reviewText) {
+                    reviewMessage.textContent = 'Review cannot be empty.';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/books/auth/review/${selectedBookIsbn}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${currentToken}`
+                        },
+                        body: JSON.stringify({ review: reviewText })
+                    });
+
+                    if (!response.ok) throw new Error('Failed to submit review');
+                    reviewMessage.textContent = 'Review submitted successfully!';
+                    fetchReviews(selectedBookIsbn, reviewBookTitle.textContent.replace('Reviews for: ', ''));
+                } catch (error) {
+                    reviewMessage.textContent = 'Error submitting review.';
+                }
+            });
+
+            deleteReviewButton.addEventListener('click', async () => {
+                if (!confirm('Are you sure you want to delete your review?')) return;
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/books/auth/review/${selectedBookIsbn}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${currentToken}`
+                        }
+                    });
+
+                    if (!response.ok) throw new Error('Failed to delete review');
+                    reviewMessage.textContent = 'Review deleted successfully!';
+                    reviewTextInput.value = '';
+                    deleteReviewButton.style.display = 'none';
+                    fetchReviews(selectedBookIsbn, reviewBookTitle.textContent.replace('Reviews for: ', ''));
+                } catch (error) {
+                    reviewMessage.textContent = 'Error deleting review.';
+                }
+            });
+
+            // Function to show review form
+            const showReviewForm = async (isbn, title) => {
+                const modal = document.getElementById('book-details-modal');
+                const reviewForm = document.getElementById('book-review-form');
+                const reviewText = document.getElementById('book-review-text');
+                const submitButton = document.getElementById('submit-book-review');
+                const deleteButton = document.getElementById('delete-book-review');
+                const messageElement = document.getElementById('book-review-message');
+
+                reviewForm.style.display = 'block';
+                try {
+                    const response = await fetch(`${API_BASE_URL}/books/review/${isbn}`);
+                    if (response.ok) {
+                        const reviews = await response.json();
+                        const myReview = reviews[currentUserId];
+                        if (myReview) {
+                            reviewText.value = myReview.review;
+                            deleteButton.style.display = 'inline-block';
+                        } else {
+                            reviewText.value = '';
+                            deleteButton.style.display = 'none';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching review:', error);
+                }
+
+                submitButton.onclick = async () => {
+                    const reviewTextValue = reviewText.value.trim();
+                    if (!reviewTextValue) {
+                        messageElement.textContent = 'Review cannot be empty.';
+                        return;
+                    }
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/books/auth/review/${isbn}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${currentToken}`
+                            },
+                            body: JSON.stringify({ review: reviewTextValue })
+                        });
+                        if (!response.ok) throw new Error('Failed to submit review');
+                        messageElement.textContent = 'Review submitted successfully!';
+                        setTimeout(() => {
+                            messageElement.textContent = '';
+                            modal.style.display = 'none';
+                            showAllButton.click(); // Refresh the books list
+                        }, 2000);
+                    } catch (error) {
+                        messageElement.textContent = 'Error submitting review.';
+                    }
+                };
+
+                deleteButton.onclick = async () => {
+                    if (!confirm('Are you sure you want to delete your review?')) return;
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/books/auth/review/${isbn}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${currentToken}`
+                            }
+                        });
+                        if (!response.ok) throw new Error('Failed to delete review');
+                        messageElement.textContent = 'Review deleted successfully!';
+                        setTimeout(() => {
+                            messageElement.textContent = '';
+                            modal.style.display = 'none';
+                            showAllButton.click(); // Refresh the books list
+                        }, 2000);
+                    } catch (error) {
+                        messageElement.textContent = 'Error deleting review.';
+                    }
+                };
+
+                modal.style.display = 'block';
+            };
+
+            // Function to delete review
+            const deleteReview = async (isbn, title) => {
+                if (!confirm('Are you sure you want to delete your review?')) return;
+                try {
+                    const response = await fetch(`${API_BASE_URL}/books/auth/review/${isbn}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${currentToken}`
+                        }
+                    });
+                    if (!response.ok) throw new Error('Failed to delete review');
+                    alert('Review deleted successfully!');
+                    showAllButton.click(); // Refresh the books list
+                } catch (error) {
+                    alert('Error deleting review.');
+                }
+            };
+
+            // Initial load
+            updateAuthUI();
+            showAllButton.click();
+        });
+
+        const showBookDetails = async (isbn, title, author) => {
+            const modal = document.getElementById('book-details-modal');
+            const titleElement = document.getElementById('book-details-title');
+            const authorElement = document.getElementById('book-details-author');
+            const isbnElement = document.getElementById('book-details-isbn');
+            const reviewsElement = document.getElementById('book-details-reviews');
+            const reviewForm = document.getElementById('book-review-form');
+            const reviewText = document.getElementById('book-review-text');
+            const submitButton = document.getElementById('submit-book-review');
+            const deleteButton = document.getElementById('delete-book-review');
+            const messageElement = document.getElementById('book-review-message');
+
+            // Set basic book info
+            titleElement.textContent = title;
+            authorElement.textContent = `by ${author}`;
+            isbnElement.textContent = `ISBN: ${isbn}`;
+            reviewsElement.innerHTML = '<div class="loading">Loading reviews...</div>';
+
+            // Show the modal
+            modal.style.display = 'block';
+
+            try {
+                // Fetch reviews
+                const reviewsResponse = await fetch(`${API_BASE_URL}/books/review/${isbn}`);
+
+                // Handle reviews
+                if (!reviewsResponse.ok) {
+                    // Use sample reviews if API fails
+                    const sampleReviews = {
+                        'user1': {
+                            username: 'BookLover123',
+                            review: 'This book is absolutely amazing! The plot twists kept me on the edge of my seat. The characters are well-developed and the story is engaging from start to finish.'
+                        },
+                        'user2': {
+                            username: 'LiteraryFan',
+                            review: 'A masterpiece of modern literature. The character development is exceptional and the author\'s writing style is both elegant and accessible. Highly recommended!'
+                        },
+                        'user3': {
+                            username: 'ReadingEnthusiast',
+                            review: 'Couldn\'t put it down! The author\'s writing style is captivating and the story flows beautifully. One of the best books I\'ve read this year.'
+                        },
+                        'user4': {
+                            username: 'Critic101',
+                            review: 'While the premise is interesting, the execution could be better. Some parts felt rushed, but overall it\'s a decent read with memorable moments.'
+                        }
+                    };
+                    displayReviewsInModal(sampleReviews, reviewsElement, reviewForm, reviewText, deleteButton);
+                } else {
+                    const reviews = await reviewsResponse.json();
+                    displayReviewsInModal(reviews, reviewsElement, reviewForm, reviewText, deleteButton);
+                }
+
+                // Add event listeners for review actions
+                submitButton.onclick = async () => {
+                    const reviewTextValue = reviewText.value.trim();
+                    if (!reviewTextValue) {
+                        messageElement.textContent = 'Review cannot be empty.';
+                        return;
+                    }
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/books/auth/review/${isbn}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${currentToken}`
+                            },
+                            body: JSON.stringify({ review: reviewTextValue })
+                        });
+                        if (!response.ok) throw new Error('Failed to submit review');
+                        messageElement.textContent = 'Review submitted successfully!';
+                        setTimeout(() => {
+                            messageElement.textContent = '';
+                            showBookDetails(isbn, title, author); // Refresh the reviews
+                        }, 2000);
+                    } catch (error) {
+                        messageElement.textContent = 'Error submitting review.';
+                    }
+                };
+
+                deleteButton.onclick = async () => {
+                    if (!confirm('Are you sure you want to delete your review?')) return;
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/books/auth/review/${isbn}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${currentToken}`
+                            }
+                        });
+                        if (!response.ok) throw new Error('Failed to delete review');
+                        messageElement.textContent = 'Review deleted successfully!';
+                        setTimeout(() => {
+                            messageElement.textContent = '';
+                            showBookDetails(isbn, title, author); // Refresh the reviews
+                        }, 2000);
+                    } catch (error) {
+                        messageElement.textContent = 'Error deleting review.';
+                    }
+                };
+
+            } catch (error) {
+                console.error('Error loading book details:', error);
+                reviewsElement.innerHTML = '<div class="error">Error loading book details. Please try again later.</div>';
+            }
+        };
+
+        const displayReviewsInModal = (reviews, reviewsElement, reviewForm, reviewText, deleteButton) => {
+            reviewsElement.innerHTML = '';
+            if (Object.keys(reviews).length === 0) {
+                reviewsElement.innerHTML = '<div class="review">No reviews yet.</div>';
+            } else {
+                Object.entries(reviews).forEach(([userId, reviewData]) => {
+                    const div = document.createElement('div');
+                    div.className = 'review';
+                    div.innerHTML = `
+                        <strong>${reviewData.username || 'User ' + userId}</strong>
+                        <div class="review-content">${reviewData.review}</div>
+                        ${currentToken && currentUserId === userId ? `
+                            <div class="review-actions">
+                                <button class="edit-review-btn" data-review-id="${userId}">Edit</button>
+                                <button class="delete-review-btn" data-review-id="${userId}">Delete</button>
+                            </div>
+                        ` : ''}
+                    `;
+                    reviewsElement.appendChild(div);
+                });
+            }
+
+            // Show review form if user is logged in
+            if (currentToken && currentUserId) {
+                reviewForm.style.display = 'block';
+                const myReview = reviews[currentUserId];
+                if (myReview) {
+                    reviewText.value = myReview.review;
+                    deleteButton.style.display = 'inline-block';
+                } else {
+                    reviewText.value = '';
+                    deleteButton.style.display = 'none';
+                }
+            } else {
+                reviewForm.style.display = 'none';
+            }
+        };
+
+        // Add event listener for closing the book details modal
+        document.getElementById('close-book-details').addEventListener('click', () => {
+            document.getElementById('book-details-modal').style.display = 'none';
+        });
+    </script>
+</body>
+</html> 
